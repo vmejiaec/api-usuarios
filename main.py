@@ -82,3 +82,27 @@ def crear_usuario(usuario: UsuarioIn):
         paramssel = {"id":new_id}
         row = conn.execute(text(sqlsel), paramssel).mappings().first()
         return UsuarioOut(**row)
+
+# Obtener usuario por ID
+@app.get("/usuarios/{usuario_id}", response_model=UsuarioOut)
+def obtener_usuario(usuario_id: int):
+    usuario = next((u for u in usuarios if u.id == usuario_id), None)
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return usuario
+
+# Actualizar usuario
+@app.put("/usuarios/{usuario_id}", response_model=UsuarioOut)
+def actualizar_usuario(usuario_id: int, datos: UsuarioIn):
+    for i, u in enumerate(usuarios):
+        if u.id == usuario_id:
+            usuarios[i].nombre = datos.nombre
+            usuarios[i].email = datos.email
+            return usuarios[i]
+    raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+# Eliminar usuario
+@app.delete("/usuarios/{usuario_id}", status_code=204)
+def eliminar_usuario(usuario_id: int):
+    global usuarios
+    usuarios = [u for u in usuarios if u.id != usuario_id]
