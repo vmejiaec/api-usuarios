@@ -1,6 +1,6 @@
 import os
 from typing import Optional, List
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Response
 from pydantic import BaseModel, EmailStr
 from dotenv import load_dotenv
 
@@ -33,6 +33,10 @@ class UsuarioOut(BaseModel):
 
 class UsuarioIn(BaseModel):
     id: int | None = None
+    nombre: str
+    email: EmailStr
+
+class UsuarioUpd(BaseModel):
     nombre: str
     email: EmailStr
 
@@ -92,18 +96,22 @@ def obtener_usuario(usuario_id: int):
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return usuario
 
-# Actualizar usuario
-@app.put("/usuarios/{usuario_id}", response_model=UsuarioOut)
-def actualizar_usuario(usuario_id: int, datos: UsuarioIn):
-    for i, u in enumerate(usuarios):
-        if u.id == usuario_id:
-            usuarios[i].nombre = datos.nombre
-            usuarios[i].email = datos.email
-            return usuarios[i]
-    raise HTTPException(status_code=404, detail="Usuario no encontrado")
+@app.put("/usuarios/{usuario_id}", response_model=UsuarioOut, tags=["usuarios"])
+def actualizar_usuario(usuario_id: int, datos: UsuarioUpd):
+    sql_upd = "update usuario set nombre=:nombre, email=:email where id=:id"
+    sql_sel = "select id, nombre, email from usuario where id=:id"
+    with engine.begin() as conn:
+        res = conn.execute(text(sql_upd), {"id": usuario_id, "nombre": datos.nombre, "email": datos.email})
+        if res.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        row = conn.execute(text(sql_sel), {"id": usuario_id}).mappings().first()
+        return UsuarioOut(**row)
 
-# Eliminar usuario
-@app.delete("/usuarios/{usuario_id}", status_code=204)
+@app.delete("/usuarios/{usuario_id}", status_code=204, tags=["usuarios"])
 def eliminar_usuario(usuario_id: int):
-    global usuarios
-    usuarios = [u for u in usuarios if u.id != usuario_id]
+    sql_del = "delete from usuario where id=:id"
+    with engine.begin() as conn:
+        res = conn.execute(text(sql_del), {"id": usuario_id})
+        if res.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    return Response(status_code=204)
