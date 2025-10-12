@@ -27,6 +27,7 @@ app = FastAPI(title="APU Usuarios (demo)", version = "1.0.0")
 
 # ---------- Esquemas (Pydantic) ---------- #
 class UsuarioOut(BaseModel):
+    id : int
     nombre: str
     email: EmailStr
 
