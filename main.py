@@ -31,7 +31,7 @@ class UsuarioOut(BaseModel):
     email: EmailStr
 
 class UsuarioIn(BaseModel):
-    id: int
+    id: int | None = None
     nombre: str
     email: EmailStr
 
