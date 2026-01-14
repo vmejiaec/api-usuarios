@@ -88,14 +88,6 @@ def crear_usuario(usuario: UsuarioIn):
         row = conn.execute(text(sqlsel), paramssel).mappings().first()
         return UsuarioOut(**row)
 
-# Obtener usuario por ID
-@app.get("/usuarios/{usuario_id}", response_model=UsuarioOut)
-def obtener_usuario(usuario_id: int):
-    usuario = next((u for u in usuarios if u.id == usuario_id), None)
-    if not usuario:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
-    return usuario
-
 @app.put("/usuarios/{usuario_id}", response_model=UsuarioOut, tags=["usuarios"])
 def actualizar_usuario(usuario_id: int, datos: UsuarioUpd):
     sql_upd = "update usuario set nombre=:nombre, email=:email where id=:id"
