@@ -3,5 +3,3 @@ uvicorn
 SQLAlchemy
 pymysql
 python-dotenv
-pytest
-requests
