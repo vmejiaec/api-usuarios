@@ -1,9 +1,14 @@
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
+from sqlalchemy.pool import StaticPool
 import main
 
 # 1) Reemplazamos engine por uno en memoria (SQLite) antes de instanciar TestClient
-main.engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+main.engine = create_engine(
+    "sqlite:///:memory:",
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool
+)
 
 # 2) Crear tabla y datos iniciales
 with main.engine.begin() as conn:
