@@ -37,9 +37,20 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest
-        # install service requirements (explicit paths)
-        if [ -f api/api-usuarios/requirements.txt ]; then pip install -r api/api-usuarios/requirements.txt; fi
-        if [ -f api/api-usuarios/test-requirements.txt ]; then pip install -r api/api-usuarios/test-requirements.txt; fi
+        # if SERVICE_DIR was set earlier, install from there; otherwise try the default path
+        if [ -z "$SERVICE_DIR" ]; then SERVICE_DIR="api/api-usuarios"; fi
+        echo "Installing from $SERVICE_DIR"
+        if [ -d "$SERVICE_DIR" ]; then
+          cd "$SERVICE_DIR"
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; else echo "no requirements.txt in $SERVICE_DIR"; fi
+          if [ -f test-requirements.txt ]; then pip install -r test-requirements.txt; else echo "no test-requirements.txt in $SERVICE_DIR"; fi
+          cd -
+        else
+          echo "$SERVICE_DIR not found, skipping service install"
+        fi
+    - name: Verify installed packages
+      run: |
+        python -m pip list
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
