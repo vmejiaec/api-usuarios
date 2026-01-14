@@ -4,4 +4,4 @@ SQLAlchemy
 pymysql
 python-dotenv
 pytest
-request
+requests
